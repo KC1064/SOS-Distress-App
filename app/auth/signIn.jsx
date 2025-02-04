@@ -1,3 +1,4 @@
+// For Logging in to already created account
 import {
   View,
   Text,
@@ -5,8 +6,10 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import Colors from "./../../constant/Colors";
 import Animated, {
@@ -22,6 +25,9 @@ export default function SignIn() {
   const router = useRouter();
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(50);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     opacity.value = withTiming(1, {
@@ -42,52 +48,65 @@ export default function SignIn() {
   });
 
   const handleSignIn = async () => {
+    setIsLoading(true);
     try {
-      const email = "user@example.com";
-      const password = "userpassword";
       await signInWithEmailAndPassword(auth, email, password);
+      console.log("User signed in successfully!");
       router.replace("/home");
     } catch (error) {
-      console.error("Error signing in:", error);
+      console.error("Error signing in:", error.message);
+      Alert.alert("Error", error.message);
+    } finally {
+      setTimeout(() => setIsLoading(false), 4000); // Simulate loading for 4 seconds
     }
   };
 
   return (
     <View style={styles.container}>
-      <Animated.Image
-        source={require("../../assets/images/logo.png")}
-        style={[styles.logo, animatedStyle]}
-      />
+      {isLoading ? (
+        <ActivityIndicator size="large" color={Colors.BLUE} />
+      ) : (
+        <>
+          <Animated.Image
+            source={require("../../assets/images/logo.png")}
+            style={[styles.logo, animatedStyle]}
+          />
 
-      <Animated.Text style={[styles.title, animatedStyle]}>
-        Welcome Back
-      </Animated.Text>
+          <Animated.Text style={[styles.title, animatedStyle]}>
+            Welcome Back
+          </Animated.Text>
 
-      <Animated.View style={[animatedStyle, styles.inputContainer]}>
-        <TextInput
-          placeholder="Phone Number"
-          keyboardType="phone-pad"
-          placeholderTextColor={Colors.BLUE}
-          style={[styles.textInput, { transform: [{ scale: 1 }], textAlign: "left" }]}
-        />
-        <TextInput
-          placeholder="Password"
-          secureTextEntry={true}
-          placeholderTextColor={Colors.BLUE}
-          style={[styles.textInput, { transform: [{ scale: 1 }], textAlign: "left" }]}
-        />
-      </Animated.View>
+          <Animated.View style={[animatedStyle, styles.inputContainer]}>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+              placeholderTextColor={Colors.BLUE}
+              style={[styles.textInput, { transform: [{ scale: 1 }], textAlign: "left" }]}
+            />
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              secureTextEntry={true}
+              placeholderTextColor={Colors.BLUE}
+              style={[styles.textInput, { transform: [{ scale: 1 }], textAlign: "left" }]}
+            />
+          </Animated.View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>Sign In</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
-        <Pressable onPress={() => router.push("auth/signUp")}>
-          <Text style={{ color: Colors.BLUE }}>Create New Here</Text>
-        </Pressable>
-      </View>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <TouchableOpacity onPress={() => router.push("auth/signUp")}>
+              <Text style={{ color: Colors.BLUE }}>Create New Here</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 }

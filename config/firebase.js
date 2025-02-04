@@ -1,14 +1,15 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCt0bsMOh9y6ZrT9TVX6z127WbajPwYKXE",
-    authDomain: "login-authentication-demo-12.firebaseapp.com",
-    projectId: "login-authentication-demo-12",
-    storageBucket: "login-authentication-demo-12.firebasestorage.app",
-    messagingSenderId: "208216995501",
-    appId: "1:208216995501:web:751d4b65cc3f58c5e0f824"
-  };
+  apiKey: "AIzaSyBn08v9uenrlG9ujU-Ccy10wev1qjlxhhI",
+  authDomain: "mayday-5ea3d.firebaseapp.com",
+  projectId: "mayday-5ea3d",
+  storageBucket: "mayday-5ea3d.firebasestorage.app",
+  messagingSenderId: "1034021606903",
+  appId: "1:1034021606903:web:b99257f16b19c16e7a4af2",
+  measurementId: "G-GHBJYMN2YJ",
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
