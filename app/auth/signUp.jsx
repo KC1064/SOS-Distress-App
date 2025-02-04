@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
   Image,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -17,6 +16,7 @@ import {
   onAuthStateChanged,
   signOut,
   updateProfile,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import Animated, {
@@ -30,144 +30,128 @@ import { db } from '../../config/firebase';
 
 export default function SignUp() {
   const router = useRouter();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(50);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
+  // Define the shared value for animation
+  const animationValue = useSharedValue(0);
 
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    opacity.value = withTiming(1, {
-      duration: 500,
-      easing: Easing.inOut(Easing.ease),
-    });
-    translateY.value = withTiming(0, {
-      duration: 500,
-      easing: Easing.out(Easing.ease),
-    });
-  }, []);
-
+  // Define the animated style
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
+      opacity: withTiming(animationValue.value, {
+        duration: 500,
+        easing: Easing.inOut(Easing.ease),
+      }),
+      transform: [
+        {
+          translateY: withTiming(animationValue.value * 10, {
+            duration: 500,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        },
+      ],
     };
   });
 
-  const handleSignUp = async () => {
-    setIsLoading(true);
-    try {
-      // Basic validation
-      if (!email || !password || !name) {
-        throw new Error('Please fill in all required fields');
-      }
+  useEffect(() => {
+    // Start the animation
+    animationValue.value = 1;
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update only the displayName
-      await updateProfile(userCredential.user, {
-        displayName: name
-      });
-      
-      if (userCredential.user.uid) {
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
-          fullName: name,
-          email: email,
-          createdAt: new Date().toISOString()
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        router.replace("/home");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleAuthentication = async () => {
+    try {
+      if (user) {
+        // If user is already authenticated, log out
+        await signOut(auth);
+        console.log('User logged out successfully!');
+      } else {
+        // Sign up
+        const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const newUser = userCredential.user;
+
+        // Update the user's profile with full name
+        await updateProfile(newUser, {
+          displayName: fullName,
         });
+
+        // Store additional user data in Firestore
+        await setDoc(doc(db, 'users', newUser.uid), {
+          fullName: fullName,
+          email: email.trim(),
+          createdAt: new Date().toISOString(),
+          uid: newUser.uid
+        });
+
+        console.log('User created successfully!');
+        // No need to manually navigate; onAuthStateChanged will handle it
       }
-      
-      console.log("User created successfully!");
-      router.push("/home");
     } catch (error) {
-      console.error("Registration error:", error);
-      // More specific error messages
-      let errorMessage = "An error occurred during registration";
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = "This email is already registered";
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = "Password should be at least 6 characters";
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = "Please enter a valid email address";
-      }
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setIsLoading(false); // Remove timeout and update loading state immediately
+      console.error('Authentication error:', error.message);
+      Alert.alert("Error", error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <ActivityIndicator size="large" color={Colors.BLUE} />
-      ) : (
-        <>
-          <Animated.Image
-            source={require("../../assets/images/logo.png")}
-            style={[styles.logo, animatedStyle]}
-          />
-          
-          <Animated.Text style={[styles.title, animatedStyle]}>
-            Create Account
-          </Animated.Text>
+      <Animated.Image
+        source={require("../../assets/images/logo.png")}
+        style={[styles.logo, animatedStyle]}
+      />
+      
+      <Animated.Text style={[styles.title, animatedStyle]}>
+        Create Account
+      </Animated.Text>
 
-          <Animated.View style={[animatedStyle, styles.inputContainer]}>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Full Name"
-              placeholderTextColor={Colors.BLUE}
-              style={styles.textInput}
-            />
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Email"
-              placeholderTextColor={Colors.BLUE}
-              keyboardType="email-address"
-              style={styles.textInput}
-            />
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Password"
-              placeholderTextColor={Colors.BLUE}
-              secureTextEntry
-              style={styles.textInput}
-            />
-          </Animated.View>
-          
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
+      <Animated.View style={[animatedStyle, styles.inputContainer]}>
+        <TextInput
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Full Name"
+          placeholderTextColor={Colors.BLUE}
+          style={styles.textInput}
+        />
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          placeholderTextColor={Colors.BLUE}
+          keyboardType="email-address"
+          style={styles.textInput}
+        />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor={Colors.BLUE}
+          secureTextEntry
+          style={styles.textInput}
+        />
+      </Animated.View>
+      
+      <TouchableOpacity style={styles.button} onPress={handleAuthentication}>
+        <Text style={styles.buttonText}>Register</Text>
+      </TouchableOpacity>
 
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 16,
-            }}
-          >
-            <Text style={{ color: Colors.WHITE }}>
-              Already have an account?{" "}
-            </Text>
-            <TouchableOpacity onPress={() => router.push("auth/signIn")}>
-              <Text style={{ color: Colors.BLUE }}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+      <View style={styles.signInContainer}>
+        <Text style={{ color: Colors.WHITE }}>
+          Already have an account?{" "}
+        </Text>
+        <TouchableOpacity onPress={() => router.push("auth/signIn")}>
+          <Text style={{ color: Colors.BLUE }}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -221,5 +205,11 @@ const styles = StyleSheet.create({
     height: 200,
     marginBottom: 20,
     alignSelf: 'center',
+  },
+  signInContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
   },
 });
