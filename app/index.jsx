@@ -66,3 +66,38 @@ const styles = StyleSheet.create({
     fontSize: 18
   }
 });
+
+// import React from "react";
+// import { NavigationContainer } from "@react-navigation/native";
+// import { createNativeStackNavigator } from "@react-navigation/native-stack";
+// import LandingScreen from "./screens/LandingScreen";
+// import LoginScreen from "./screens/LoginScreen";
+// import OTPScreen from "./screens/OTPScreen";
+// import UserScreen from "./screens/UserScreen";
+// import RescueCenterScreen from "./screens/RescueCenterScreen";
+// import ProfileScreen from "./screens/ProfileScreen";
+
+// const Stack = createNativeStackNavigator();
+
+// export default function App() {
+//   return (
+//     <NavigationContainer>
+//       <Stack.Navigator initialRouteName="Landing">
+//         <Stack.Screen
+//           name="Landing"
+//           component={LandingScreen}
+//           options={{ headerShown: false }}
+//         />
+//         <Stack.Screen
+//           name="Login"
+//           component={LoginScreen}
+//           options={{ headerShown: false }}
+//         />
+//         <Stack.Screen name="OTP" component={OTPScreen} />
+//         <Stack.Screen name="User" component={UserScreen} />
+//         <Stack.Screen name="RescueCenter" component={RescueCenterScreen} />
+//         <Stack.Screen name="Profile" component={ProfileScreen} />
+//       </Stack.Navigator>
+//     </NavigationContainer>
+//   );
+// }
