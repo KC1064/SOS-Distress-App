@@ -34,6 +34,8 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [user, setUser] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Define the shared value for animation
   const animationValue = useSharedValue(0);
@@ -72,6 +74,7 @@ export default function SignUp() {
 
   const handleAuthentication = async () => {
     try {
+      setIsLoading(true); // Start loading
       if (user) {
         // If user is already authenticated, log out
         await signOut(auth);
@@ -90,6 +93,7 @@ export default function SignUp() {
         await setDoc(doc(db, 'users', newUser.uid), {
           fullName: fullName,
           email: email.trim(),
+          phoneNumber: phoneNumber.trim(),
           createdAt: new Date().toISOString(),
           uid: newUser.uid
         });
@@ -97,62 +101,101 @@ export default function SignUp() {
         console.log('User created successfully!');
         // No need to manually navigate; onAuthStateChanged will handle it
       }
+      
+      // Run loader for 3 seconds before navigating
+      setTimeout(() => {
+        setIsLoading(false);
+        navigateToHome();
+      }, 3000);
     } catch (error) {
+      setIsLoading(false); // Stop loading on error
       console.error('Authentication error:', error.message);
       Alert.alert("Error", error.message);
     }
   };
 
+  // Try these alternative navigation methods if router.replace doesn't work
+  const navigateToHome = () => {
+    try {
+      // Method 1: Using replace
+      router.replace("/home");
+    } catch (error) {
+      console.log('Replace failed, trying push...');
+      try {
+        // Method 2: Using push
+        router.push("/home");
+      } catch (error) {
+        console.log('Push failed, trying navigation...');
+        try {
+          // Method 3: Using navigation
+          router.navigate("/home");
+        } catch (error) {
+          console.error('All navigation methods failed:', error);
+        }
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Animated.Image
-        source={require("../../assets/images/logo.jpeg")}
-        style={[styles.logo, animatedStyle]}
-      />
-      
-
-      <Animated.Text style={[styles.title, animatedStyle]}>
-        Create Account
-      </Animated.Text>
-
-      <Animated.View style={[animatedStyle, styles.inputContainer]}>
-        <TextInput
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Full Name"
-          placeholderTextColor={Colors.BLUE}
-          style={styles.textInput}
-        />
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          placeholderTextColor={Colors.BLUE}
-          keyboardType="email-address"
-          style={styles.textInput}
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          placeholderTextColor={Colors.BLUE}
-          secureTextEntry
-          style={styles.textInput}
-        />
-      </Animated.View>
-      
-      <TouchableOpacity style={styles.button} onPress={handleAuthentication}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
-
-      <View style={styles.signInContainer}>
-        <Text style={{ color: Colors.WHITE }}>
-          Already have an account?{" "}
-        </Text>
-        <TouchableOpacity onPress={() => router.push("auth/signIn")}>
-          <Text style={{ color: Colors.BLUE }}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Show loader if isLoading is true */}
+      {isLoading ? (
+        <Text style={styles.loadingText}>Loading...</Text>
+      ) : (
+        <>
+          <Animated.Image
+            source={require("../../assets/images/logo.jpeg")}
+            style={[styles.logo, animatedStyle]}
+          />
+          <Animated.Text style={[styles.title, animatedStyle]}>
+            Create Account
+          </Animated.Text>
+          <Animated.View style={[animatedStyle, styles.inputContainer]}>
+            <TextInput
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="Full Name"
+              placeholderTextColor={Colors.BLUE}
+              style={styles.textInput}
+            />
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              placeholderTextColor={Colors.BLUE}
+              keyboardType="email-address"
+              style={styles.textInput}
+            />
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              placeholderTextColor={Colors.BLUE}
+              secureTextEntry
+              style={styles.textInput}
+            />
+            <TextInput
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="Phone Number"
+              placeholderTextColor={Colors.BLUE}
+              keyboardType="phone-pad"
+              style={styles.textInput}
+            />
+          </Animated.View>
+          <TouchableOpacity style={styles.button} onPress={handleAuthentication}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
+          <View style={styles.signInContainer}>
+            <Text style={{ color: Colors.WHITE }}>
+              Already have an account?{" "}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("auth/signIn")}>
+              <Text style={{ color: Colors.BLUE }}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -212,5 +255,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 16,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: Colors.BLUE,
+    textAlign: "center",
   },
 });
