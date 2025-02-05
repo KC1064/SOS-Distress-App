@@ -68,7 +68,7 @@ export default function SignIn() {
       ) : (
         <>
           <Animated.Image
-            source={require("../../assets/images/logo.png")}
+            source={require("../../assets/images/logo.jpeg")}
             style={[styles.logo, animatedStyle]}
           />
 

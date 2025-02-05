@@ -106,10 +106,11 @@ export default function SignUp() {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require("../../assets/images/logo.png")}
+        source={require("../../assets/images/logo.jpeg")}
         style={[styles.logo, animatedStyle]}
       />
       
+
       <Animated.Text style={[styles.title, animatedStyle]}>
         Create Account
       </Animated.Text>

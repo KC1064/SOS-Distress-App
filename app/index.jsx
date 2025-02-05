@@ -22,7 +22,7 @@ export default function Index() {
         backgroundColor: Colors.BLUE
       }}
     >
-      <Image source={require('./../assets/images/landing.png')}
+      <Image source={require('./../assets/images/landing.jpeg')}
         style={{
           width: '100%',
           height: 300,
