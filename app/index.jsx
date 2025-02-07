@@ -1,8 +1,20 @@
-import { Text, View, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, Image, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import Colors from '../constant/Colors';
 import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+
 export default function Index() {
   const router = useRouter();
+  const slideAnim = useRef(new Animated.Value(400)).current; 
+
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <View
       style={{
@@ -10,20 +22,23 @@ export default function Index() {
         backgroundColor: Colors.BLUE
       }}
     >
-      <Image source={require('./../assets/images/landing.png')}
+      <Image source={require('./../assets/images/landing.jpeg')}
         style={{
           width: '100%',
           height: 300,
           marginTop: 70
         }}
       />
-      <View style={{
-        padding: 25,
-        backgroundColor: Colors.PRIMARY,
-        height: '100%',
-        borderTopLeftRadius: 35,
-        borderTopRightRadius: 35
-      }}>
+      <Animated.View 
+        style={[{
+          padding: 25,
+          backgroundColor: Colors.PRIMARY,
+          height: '100%',
+          borderTopLeftRadius: 35,
+          borderTopRightRadius: 35,
+          transform: [{ translateY: slideAnim }]
+        }]}
+      >
         <Text style={{
           fontSize: 25,
           fontWeight: 'bold',
@@ -49,7 +64,7 @@ export default function Index() {
         }]}>
           <Text style={[styles.buttonText, { color: Colors.BLUE }]}>Already have an Account</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </View>
   );
 }
