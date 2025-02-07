@@ -136,6 +136,20 @@ export default function SignUp() {
     }
   };
 
+  const storeUserInfo = async (user) => {
+    try {
+      await setDoc(doc(db, 'users', user.uid), {
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        createdAt: new Date().toISOString(),
+      });
+      console.log('User information stored successfully!');
+    } catch (error) {
+      console.error('Error storing user information:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Show loader if isLoading is true */}

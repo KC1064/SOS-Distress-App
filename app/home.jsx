@@ -2,10 +2,43 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-nativ
 import React from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Colors from "../constant/Colors";
+import SendSMS from 'react-native-sms';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Home() {
+  const navigation = useNavigation();
+
+  const handleLogout = () => {
+    console.log("User logged out");
+    navigation.navigate('Index');
+  };
+
+  const sendSMS = () => {
+    SendSMS.send({
+      body: 'This is a test message',
+      recipients: ['8342829059'],
+      successTypes: ['sent', 'queued'],
+      allowAndroidSendWithoutReadPermission: true
+    }, (completed, cancelled, error) => {
+      if (completed) {
+        console.log('SMS Sent Successfully');
+      } else if (cancelled) {
+        console.log('SMS Sending Cancelled');
+      } else if (error) {
+        console.log('Some error occurred');
+      }
+    });
+    console.log('SMS send function executed');
+  };
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity 
+        style={styles.logoutButton}
+        onPress={handleLogout}
+      >
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
       <Text style={styles.mainTitle}>MAYDAY SIGNAL</Text>
       <Text style={styles.subtitle}>Don't Panic, Keep Calm</Text>
       <Text style={styles.subtitle}>Help is on the way.</Text>
@@ -13,6 +46,7 @@ export default function Home() {
       <TouchableOpacity 
         style={styles.helpButton}
         activeOpacity={0.8}
+        onPress={sendSMS}
       >
         <View style={styles.buttonInner}>
           <Text style={styles.helpButtonText}>HELP</Text>
@@ -40,6 +74,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A1A',
     alignItems: "center",
     padding: 20,
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 10,
+    backgroundColor: '#FF3B30',
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'outfit-bold',
   },
   mainTitle: {
     fontSize: 32,
